@@ -1,0 +1,18 @@
+[package]
+name = "twitch-tamagotchi"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.98"
+axum = "0.8.4"
+dotenv = "0.15.0"
+rand = "0.9.1"
+reqwest = { version = "0.12", features = ["json"] }
+tmi = "0.9.0"
+tokio = { version = "1.44.1", features = ["full"] }
+tower-http = { version = "0.6.4", features = ["cors"] }
+winnow = "0.7.10"
+serde = { version = "1.0.219", features = ["derive"] }
+openssl = { version = "0.10", features = ["vendored"] } # cross compile
+

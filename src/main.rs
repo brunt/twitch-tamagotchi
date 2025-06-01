@@ -1,0 +1,86 @@
+use crate::parser::get_command;
+use crate::tamagotchi::{ActiveState, Tamagotchi};
+use crate::webserver::{ActionRequest, start_web_server};
+use dotenv::dotenv;
+use rand::rngs::SmallRng;
+use rand::{Rng, SeedableRng};
+use std::sync::{Arc, Mutex};
+
+mod commands;
+mod parser;
+mod tamagotchi;
+mod webserver;
+
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
+    let tamagotchi = Arc::new(Mutex::new(Tamagotchi::new("Bernard".to_string())));
+    _ = tokio::spawn(read_commands_from_chat());
+    _ = tokio::spawn(start_web_server(Arc::clone(&tamagotchi)));
+    start_game_loop(Arc::clone(&tamagotchi)).await?;
+    Ok(())
+}
+
+async fn read_commands_from_chat() {
+    dotenv().ok();
+    let channel = format!(
+        "#{}",
+        std::env::var("CHANNEL_NAME").expect("missing CHANNEL_NAME env var")
+    );
+
+    let action_url = format!(
+        "http://localhost:{}/action",
+        std::env::var("PORT").unwrap_or("9091".to_string())
+    );
+
+    let http_client = reqwest::Client::new();
+    let mut irc_client = tmi::Client::anonymous()
+        .await
+        .expect("failed to create client");
+    irc_client
+        .join(&channel)
+        .await
+        .expect("failed to join channel");
+
+    loop {
+        if let Ok(msg) = irc_client.recv().await {
+            if let Ok(m) = msg.as_typed() {
+                match m {
+                    tmi::Message::Privmsg(msg) => {
+                        if let Some(command) = get_command(&mut msg.text()) {
+                            println!("{:?}", command);
+                            // send to the game
+                            _ = http_client
+                                .post(&action_url)
+                                .json(&ActionRequest::from(command))
+                                .send()
+                                .await
+                                .unwrap();
+                        }
+                    }
+                    tmi::Message::Reconnect => {
+                        _ = irc_client.reconnect().await;
+                        _ = irc_client.join(&channel).await;
+                    }
+                    tmi::Message::Ping(ping) => {
+                        _ = irc_client.pong(&ping).await;
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+}
+
+async fn start_game_loop(tamagotchi: Arc<Mutex<Tamagotchi>>) -> anyhow::Result<()> {
+    let mut rng = SmallRng::from_os_rng();
+    dbg!("loop start");
+    loop {
+        dbg!();
+        // random durations
+        tokio::time::sleep(std::time::Duration::from_secs(rng.random_range(1..5))).await;
+        if let Some((_, state, _)) = &tamagotchi.lock().unwrap().get_needs_rng_mut() {
+            dbg!(state);
+        }
+        // tamagotchi.lock().unwrap().idle();
+    }
+}
