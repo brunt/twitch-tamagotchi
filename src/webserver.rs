@@ -1,7 +1,7 @@
 use crate::commands::PetCommand;
 use crate::tamagotchi::Tamagotchi;
 use axum::extract::State;
-use axum::http::{HeaderValue, Method, StatusCode};
+use axum::http::{Method, StatusCode};
 use axum::response::sse::Event;
 use axum::response::{IntoResponse, Response, Sse};
 use axum::routing::{get, post};
@@ -12,7 +12,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio_stream::StreamExt as _;
 use tokio_stream::wrappers::IntervalStream;
-use tower_http::cors::CorsLayer;
+use tower_http::cors::{Any, CorsLayer};
 use tower_http::services::ServeDir;
 
 #[derive(Clone)]
@@ -39,7 +39,6 @@ impl From<PetCommand> for ActionRequest {
 
 pub async fn start_web_server(tamagotchi: Arc<Mutex<Tamagotchi>>) -> anyhow::Result<()> {
     let default_port = std::env::var("PORT")?;
-
     let state = AppState::new(tamagotchi);
 
     let app = Router::new()
@@ -47,7 +46,7 @@ pub async fn start_web_server(tamagotchi: Arc<Mutex<Tamagotchi>>) -> anyhow::Res
         .route("/sse", get(sse_handler))
         .layer(
             CorsLayer::new()
-                .allow_origin(format!("http://localhost:{default_port}").parse::<HeaderValue>()?)
+                .allow_origin(Any)
                 .allow_methods([Method::GET, Method::POST]),
         )
         .fallback_service(ServeDir::new("assets"))
@@ -64,20 +63,16 @@ async fn action(State(state): State<AppState>, Json(req): Json<ActionRequest>) -
         match req.action {
             PetCommand::Feed => {
                 tamagotchi.feed();
-                dbg!("{:?}", tamagotchi.to_string());
-            },
+            }
             PetCommand::Clean => {
                 tamagotchi.clean();
-                dbg!("{:?}", tamagotchi.to_string());
-            },
+            }
             PetCommand::Play => {
                 tamagotchi.play();
-                dbg!("{:?}", tamagotchi.to_string());
-            },
+            }
             PetCommand::Sleep => {
                 tamagotchi.sleep();
-                dbg!("{:?}", tamagotchi.to_string());
-            },
+            }
             PetCommand::New(name) => {
                 *tamagotchi = Tamagotchi::new(name);
             }

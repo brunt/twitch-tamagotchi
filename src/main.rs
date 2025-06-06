@@ -46,7 +46,6 @@ async fn read_commands_from_chat() {
                 match m {
                     tmi::Message::Privmsg(msg) => {
                         if let Some(command) = get_command(&mut msg.text()) {
-                            println!("{:?}", command);
                             _ = http_client
                                 .post(&action_url)
                                 .json(&ActionRequest::from(command))
