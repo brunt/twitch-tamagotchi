@@ -1,5 +1,4 @@
 use crate::commands::PetCommand;
-use std::io::Empty;
 use winnow::Parser;
 use winnow::ascii::Caseless;
 use winnow::combinator::{alt, preceded};
@@ -11,7 +10,7 @@ pub fn get_command(input: &mut &str) -> Option<PetCommand> {
         alt((
             Caseless("feed").value(PetCommand::Feed),
             // Caseless("discipline").value(PetCommand::Discipline),
-            Caseless("pet").value(PetCommand::Play),
+            Caseless("play").value(PetCommand::Play),
             Caseless("sleep").value(PetCommand::Sleep),
             Caseless("clean").value(PetCommand::Clean),
             // Caseless("medicine").value(PetCommand::Medicine),

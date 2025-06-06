@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Twitch Tamagotchi</title>
+</head>
+<body>
+<div id="tamagotchi">
+    <h1 id="name"></h1>
+    <p id="age"></p>
+    <p id="energy"></p>
+    <p id="happy"></p>
+    <p id="hunger"></p>
+    <p id="clean"></p>
+    <p id="state"></p>
+</div>
+
+<canvas id="tamagotchiCanvas"></canvas>
+<p>Commands</p>
+<ul>
+    <li>!feed</li>
+    <li>!sleep</li>
+    <li>!clean</li>
+    <li>!play</li>
+</ul>
+<script>
+    const canvas = document.getElementById('tamagotchiCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Size of each "pixel"
+    const pixel = 10;
+
+    // Simple pixel map for a Tamagotchi (12x12 grid)
+    // 0 = empty, 1 = body, 2 = screen, 3 = face
+    const tamagotchiPixels = [
+        [0,0,0,1,1,1,1,1,1,0,0,0],
+        [0,0,1,1,1,1,1,1,1,1,0,0],
+        [0,1,1,1,1,1,1,1,1,1,1,0],
+        [1,1,1,1,1,1,1,1,1,1,1,1],
+        [1,1,1,1,2,2,2,2,1,1,1,1],
+        [1,1,1,2,2,2,2,2,2,1,1,1],
+        [1,1,1,2,3,0,0,3,2,1,1,1],
+        [1,1,1,2,0,3,3,0,2,1,1,1],
+        [1,1,1,2,2,2,2,2,2,1,1,1],
+        [1,1,1,1,2,2,2,2,1,1,1,1],
+        [0,1,1,1,1,1,1,1,1,1,1,0],
+        [0,0,1,1,1,1,1,1,1,1,0,0]
+    ];
+
+    // Define colors for each pixel type
+    const colors = {
+        0: 'transparent',       // empty
+        1: '#FFD700',           // body (yellow/gold)
+        2: '#B0C4DE',           // screen (light blue/gray)
+        3: '#222'               // face (black)
+    };
+
+    // Draw the Tamagotchi pixel art
+    for (let y = 0; y < tamagotchiPixels.length; y++) {
+        for (let x = 0; x < tamagotchiPixels[y].length; x++) {
+            let color = colors[tamagotchiPixels[y][x]];
+            if (color !== 'transparent') {
+                ctx.fillStyle = color;
+                ctx.fillRect(x * pixel, y * pixel, pixel, pixel);
+            }
+        }
+    }
+
+
+  let eventSource = new EventSource('sse');
+
+  eventSource.onmessage = (event) => {
+      let name = document.getElementById("name");
+      let age = document.getElementById("age");
+      let energy = document.getElementById("energy");
+      let happy = document.getElementById("happy");
+      let hunger = document.getElementById("hunger");
+      let clean = document.getElementById("clean");
+
+      let state = document.getElementById("state")
+
+      // let tam = document.getElementById("tamagotchi");
+      let tamagotchi = JSON.parse(event.data);
+      console.log(tamagotchi);
+      name.innerText = tamagotchi.name;
+
+      if(tamagotchi.health === "Dead") {
+            age.innerText =
+            happy.innerText =
+            energy.innerText =
+            hunger.innerText =
+            clean.innerText =
+            state.innerText = "";
+      } else {
+          age.innerText = `Age: ${tamagotchi.age}`;
+          happy.innerText = `Happy: ${tamagotchi.health.Healthy[0].happy}`;
+          energy.innerText = `Energy: ${tamagotchi.health.Healthy[0].energy}`;
+          hunger.innerText = `Hunger: ${tamagotchi.health.Healthy[0].hunger}`;
+          clean.innerText = `Clean: ${tamagotchi.health.Healthy[0].clean}`;
+          state.innerText = `State: ${tamagotchi.health.Healthy[1]}`;
+      }
+    }
+</script>
+</body>
+</html>

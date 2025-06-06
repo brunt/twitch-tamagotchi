@@ -1,18 +1,18 @@
 use crate::parser::get_command;
-use crate::tamagotchi::{ActiveState, Tamagotchi};
+use crate::tamagotchi::Tamagotchi;
 use crate::webserver::{ActionRequest, start_web_server};
 use dotenv::dotenv;
-use rand::rngs::SmallRng;
-use rand::{Rng, SeedableRng};
 use std::sync::{Arc, Mutex};
 
 mod commands;
+mod frontend;
 mod parser;
 mod tamagotchi;
 mod webserver;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    dotenv().ok();
     let tamagotchi = Arc::new(Mutex::new(Tamagotchi::new("Bernard".to_string())));
     _ = tokio::spawn(read_commands_from_chat());
     _ = tokio::spawn(start_web_server(Arc::clone(&tamagotchi)));
@@ -72,15 +72,13 @@ async fn read_commands_from_chat() {
 }
 
 async fn start_game_loop(tamagotchi: Arc<Mutex<Tamagotchi>>) -> anyhow::Result<()> {
-    let mut rng = SmallRng::from_os_rng();
-    dbg!("loop start");
+    // let mut rng = SmallRng::from_os_rng();
     loop {
-        dbg!();
         // random durations
-        tokio::time::sleep(std::time::Duration::from_secs(rng.random_range(1..5))).await;
-        if let Some((_, state, _)) = &tamagotchi.lock().unwrap().get_needs_rng_mut() {
-            dbg!(state);
+        tokio::time::sleep(std::time::Duration::from_secs(10)).await;
+        if let Ok(mut t) = tamagotchi.lock() {
+            dbg!("{}", &t.to_string());
+            t.do_idle();
         }
-        // tamagotchi.lock().unwrap().idle();
     }
 }
