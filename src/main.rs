@@ -53,8 +53,7 @@ async fn read_commands_from_chat() {
                                 .post(&action_url)
                                 .json(&ActionRequest::from(command))
                                 .send()
-                                .await
-                                .unwrap();
+                                .await;
                         }
                     }
                     tmi::Message::Reconnect => {
@@ -75,7 +74,6 @@ async fn start_game_loop(tamagotchi: Arc<Mutex<Tamagotchi>>) -> anyhow::Result<(
     loop {
         tokio::time::sleep(std::time::Duration::from_secs(30)).await;
         if let Ok(mut t) = tamagotchi.lock() {
-            dbg!("{}", &t.to_string());
             t.do_idle();
         }
     }

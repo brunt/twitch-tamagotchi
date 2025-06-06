@@ -65,18 +65,21 @@ async fn action(State(state): State<AppState>, Json(req): Json<ActionRequest>) -
             PetCommand::Feed => {
                 tamagotchi.feed();
                 dbg!("{:?}", tamagotchi.to_string());
-            }
+            },
             PetCommand::Clean => {
                 tamagotchi.clean();
                 dbg!("{:?}", tamagotchi.to_string());
-            }
+            },
             PetCommand::Play => {
                 tamagotchi.play();
                 dbg!("{:?}", tamagotchi.to_string());
-            }
+            },
             PetCommand::Sleep => {
                 tamagotchi.sleep();
                 dbg!("{:?}", tamagotchi.to_string());
+            },
+            PetCommand::New(name) => {
+                *tamagotchi = Tamagotchi::new(name);
             }
         }
         StatusCode::OK.into_response()
