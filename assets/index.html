@@ -14,8 +14,7 @@
     <p id="clean"></p>
     <p id="state"></p>
 </div>
-
-<canvas id="tamagotchiCanvas"></canvas>
+<canvas id="tamagotchiCanvas" width="160" height="160"></canvas>
 <p>Commands</p>
 <ul>
     <li>!feed</li>
@@ -24,50 +23,60 @@
     <li>!play</li>
 </ul>
 <script>
-    const canvas = document.getElementById('tamagotchiCanvas');
-    const ctx = canvas.getContext('2d');
-
-    // Size of each "pixel"
-    const pixel = 10;
-
-    // Simple pixel map for a Tamagotchi (12x12 grid)
-    // 0 = empty, 1 = body, 2 = screen, 3 = face
-    const tamagotchiPixels = [
-        [0,0,0,1,1,1,1,1,1,0,0,0],
-        [0,0,1,1,1,1,1,1,1,1,0,0],
-        [0,1,1,1,1,1,1,1,1,1,1,0],
-        [1,1,1,1,1,1,1,1,1,1,1,1],
-        [1,1,1,1,2,2,2,2,1,1,1,1],
-        [1,1,1,2,2,2,2,2,2,1,1,1],
-        [1,1,1,2,3,0,0,3,2,1,1,1],
-        [1,1,1,2,0,3,3,0,2,1,1,1],
-        [1,1,1,2,2,2,2,2,2,1,1,1],
-        [1,1,1,1,2,2,2,2,1,1,1,1],
-        [0,1,1,1,1,1,1,1,1,1,1,0],
-        [0,0,1,1,1,1,1,1,1,1,0,0]
+    const mametchi_adult = [
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0],
+        [0,0,0,1,1,1,1,0,0,0,1,1,1,1,0,0],
+        [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+        [0,0,1,1,0,0,0,0,0,0,0,0,1,1,0,0],
+        [0,0,1,0,0,1,0,0,0,1,0,0,0,1,0,0],
+        [0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0],
+        [0,1,0,0,0,0,1,1,1,0,0,0,0,0,1,0],
+        [0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0],
+        [0,1,0,0,1,0,0,0,0,0,0,1,0,1,0,0],
+        [0,0,1,1,0,0,0,0,0,0,0,1,1,1,0,0],
+        [0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0],
+        [0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0],
+        [0,0,0,0,1,0,1,1,1,0,0,1,0,0,0,0],
+        [0,0,0,0,1,0,1,0,0,1,1,0,0,0,0,0],
+        [0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0]
     ];
 
-    // Define colors for each pixel type
-    const colors = {
-        0: 'transparent',       // empty
-        1: '#FFD700',           // body (yellow/gold)
-        2: '#B0C4DE',           // screen (light blue/gray)
-        3: '#222'               // face (black)
-    };
-
-    // Draw the Tamagotchi pixel art
-    for (let y = 0; y < tamagotchiPixels.length; y++) {
-        for (let x = 0; x < tamagotchiPixels[y].length; x++) {
-            let color = colors[tamagotchiPixels[y][x]];
-            if (color !== 'transparent') {
-                ctx.fillStyle = color;
-                ctx.fillRect(x * pixel, y * pixel, pixel, pixel);
-            }
-        }
-    }
+    const mametchi_adult_inverted = mametchi_adult.map(row => row.slice().reverse());
 
 
+    // const mametchi_adult = [
+    //     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    //     [0,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0],
+    //     [0,0,0,1,1,1,1,0,0,0,1,1,1,1,0,0],
+    //     [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+    //     [0,0,1,1,0,0,0,0,0,0,0,0,1,1,0,0],
+    //     [0,0,1,0,0,1,0,0,0,1,0,0,0,1,0,0],
+    //     [0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0],
+    //     [0,1,0,0,0,0,1,1,1,0,0,0,0,0,1,0],
+    //     [0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0],
+    //     [0,1,0,0,1,0,0,0,0,0,0,1,0,1,0,0],
+    //     [0,0,1,1,0,0,0,0,0,0,0,1,1,1,0,0],
+    //     [0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0],
+    //     [0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0],
+    //     [0,0,0,0,1,0,1,1,1,0,0,1,0,0,0,0],
+    //     [0,0,0,0,1,0,1,0,0,1,1,0,0,0,0,0],
+    //     [0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0]
+    // ];
+
+    const canvas = document.getElementById('tamagotchiCanvas');
+    const ctx = canvas.getContext('2d');
+    const pixelSize = 10;
+
+    ctx.fillStyle = 'black';
+
+    let invert = false;
   let eventSource = new EventSource('sse');
+
+    const getEmojis = (value, emoji) => {
+        const count = Math.round(value / 25);
+        return emoji.repeat(count);
+    }
 
   eventSource.onmessage = (event) => {
       let name = document.getElementById("name");
@@ -76,12 +85,8 @@
       let happy = document.getElementById("happy");
       let hunger = document.getElementById("hunger");
       let clean = document.getElementById("clean");
-
-      let state = document.getElementById("state")
-
-      // let tam = document.getElementById("tamagotchi");
+      let state = document.getElementById("state");
       let tamagotchi = JSON.parse(event.data);
-      console.log(tamagotchi);
       name.innerText = tamagotchi.name;
 
       if(tamagotchi.health === "Dead") {
@@ -93,12 +98,32 @@
             state.innerText = "";
       } else {
           age.innerText = `Age: ${tamagotchi.age}`;
-          happy.innerText = `Happy: ${tamagotchi.health.Healthy[0].happy}`;
-          energy.innerText = `Energy: ${tamagotchi.health.Healthy[0].energy}`;
-          hunger.innerText = `Hunger: ${tamagotchi.health.Healthy[0].hunger}`;
-          clean.innerText = `Clean: ${tamagotchi.health.Healthy[0].clean}`;
+          happy.innerText = `Happy: ${getEmojis(tamagotchi.health.Healthy[0].happy, "😃")}`;
+          energy.innerText = `Energy: ${getEmojis(tamagotchi.health.Healthy[0].energy, "⚡")}`;
+          hunger.innerText = `Hunger: ${getEmojis(tamagotchi.health.Healthy[0].hunger, "🍖")}`;
+          clean.innerText = `Clean: ${getEmojis(tamagotchi.health.Healthy[0].clean, "🧼")}`;
           state.innerText = `State: ${tamagotchi.health.Healthy[1]}`;
       }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (invert) {
+          for (let y = 0; y < mametchi_adult_inverted.length; y++) {
+              for (let x = 0; x < mametchi_adult_inverted[y].length; x++) {
+                  if (mametchi_adult_inverted[y][x]) {
+                      ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+                  }
+              }
+          }
+      } else {
+          for (let y = 0; y < mametchi_adult.length; y++) {
+              for (let x = 0; x < mametchi_adult[y].length; x++) {
+                  if (mametchi_adult[y][x]) {
+                      ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+                  }
+              }
+          }
+      }
+      invert = !invert;
     }
 </script>
 </body>

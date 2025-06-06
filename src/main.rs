@@ -72,10 +72,8 @@ async fn read_commands_from_chat() {
 }
 
 async fn start_game_loop(tamagotchi: Arc<Mutex<Tamagotchi>>) -> anyhow::Result<()> {
-    // let mut rng = SmallRng::from_os_rng();
     loop {
-        // random durations
-        tokio::time::sleep(std::time::Duration::from_secs(10)).await;
+        tokio::time::sleep(std::time::Duration::from_secs(30)).await;
         if let Ok(mut t) = tamagotchi.lock() {
             dbg!("{}", &t.to_string());
             t.do_idle();

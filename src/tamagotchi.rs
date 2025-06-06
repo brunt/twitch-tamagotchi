@@ -29,10 +29,10 @@ pub struct Needs {
 impl Default for Needs {
     fn default() -> Self {
         Self {
-            energy: 50,
-            happy: 50,
-            hunger: 50,
-            clean: 50,
+            energy: 100,
+            happy: 100,
+            hunger: 100,
+            clean: 100,
         }
     }
 }

@@ -84,44 +84,23 @@ async fn action(State(state): State<AppState>, Json(req): Json<ActionRequest>) -
         StatusCode::INTERNAL_SERVER_ERROR.into_response()
     }
 }
-
-// prob want a channel, polling is messy
 async fn sse_handler(
     State(state): State<AppState>,
 ) -> Sse<impl tokio_stream::Stream<Item = Result<Event, Infallible>>> {
-    // let tamagotchi = state.tamagotchi.clone();
-    //
-    // let interval = interval(Duration::from_secs(5));
-    // let stream = IntervalStream::new(interval)
-    //     .map(move |_| {
-    //     let state_json = {
-    //
-    //         // have to convert to json manually because axum Json() sets content type which we don't want in sse
-    //         serde_json::to_string(&tamagotchi).unwrap()
-    //     };
-    //     Ok(Event::default().data(state_json))
-    // });
-    //
-    // Sse::new(stream).keep_alive(
-    //     axum::response::sse::KeepAlive::new()
-    //         .interval(Duration::from_secs(10))
-    //         .text("keep-alive-text"),
-    // )
-    let interval = tokio::time::interval(Duration::from_secs(5));
+    let interval = tokio::time::interval(Duration::from_secs(2));
     let tamagotchi = state.tamagotchi.clone();
 
     let stream = IntervalStream::new(interval).then(move |_| {
         let tamagotchi = tamagotchi.clone();
         async move {
-            let tamagotchi = tamagotchi.lock().unwrap(); // or .await if using TokioMutex
-            let state_json = serde_json::to_string(&*tamagotchi).unwrap();
-            Ok(Event::default().data(state_json))
+            if let Ok(tamagotchi) = tamagotchi.lock() {
+                if let Ok(state_json) = serde_json::to_string(&*tamagotchi) {
+                    return Ok(Event::default().data(state_json));
+                }
+            }
+            Ok(Event::default().data("{}"))
         }
     });
 
-    Sse::new(stream).keep_alive(
-        axum::response::sse::KeepAlive::new()
-            .interval(Duration::from_secs(10))
-            .text("keep-alive-text"),
-    )
+    Sse::new(stream).keep_alive(axum::response::sse::KeepAlive::new())
 }
