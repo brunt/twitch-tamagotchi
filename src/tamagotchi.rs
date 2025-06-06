@@ -104,6 +104,12 @@ impl Tamagotchi {
 
     pub fn do_idle(&mut self) {
         if let Health::Healthy(ref mut needs, ref mut state) = self.health {
+            let age_factor = match self.age {
+                x if x < 50 => 4,
+                x if x < 100 => 3,
+                x if x < 150 => 2,
+                _ => 1,
+            };
             if needs.energy == 0 || (state == &ActiveState::Sleeping && needs.energy < 100) {
                 *state = ActiveState::Sleeping;
                 needs.energy = (needs.energy + 25).min(100);
@@ -111,8 +117,8 @@ impl Tamagotchi {
                 *state = ActiveState::Idle;
                 needs.energy = (needs.energy - self.rng.random_range(1..3)).max(0);
             };
-            needs.hunger = (needs.hunger - self.rng.random_range(1..3)).max(0);
-            needs.happy = (needs.happy - self.rng.random_range(1..3)).max(0);
+            needs.hunger = (needs.hunger - (self.rng.random_range(1..3) * age_factor)).max(0);
+            needs.happy = (needs.happy - (self.rng.random_range(1..3)) * age_factor).max(0);
             needs.clean = (needs.clean - self.rng.random_range(1..3)).max(0);
             self.age += 1;
 
