@@ -38,7 +38,7 @@ impl From<PetCommand> for ActionRequest {
 }
 
 pub async fn start_web_server(tamagotchi: Arc<Mutex<Tamagotchi>>) -> anyhow::Result<()> {
-    let default_port = std::env::var("PORT")?; //_or("9091".to_string());
+    let default_port = std::env::var("PORT")?;
 
     let state = AppState::new(tamagotchi);
 

@@ -1,27 +1,133 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" http-equiv="refresh" content="1200">
     <title>Twitch Tamagotchi</title>
+    <style>
+        body {
+            line-height: 1;
+        }
+        div#tamagotchi {
+            position: relative; /* Add this */
+            background-image: url("p1-background.png");
+            background-repeat: no-repeat;
+            border: 5px solid black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+            margin: 0 auto;
+            width: 345px;
+            height: 345px;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+            box-sizing: border-box;
+        }
+        div#stats {
+            padding-left: 1em;
+            border-bottom-right-radius: 0;
+            border-right: none;
+        }
+        div#commands {
+            border-bottom-left-radius: 0;
+            border-left: none;
+            padding-left: 1em;
+        }
+        div#bottom-container {
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            width: 345px;
+            margin: 0 auto;
+            gap: 0; /* or small gap if you want spacing */
+            box-sizing: border-box;
+            border-bottom: 5px solid black;
+            border-left: 5px solid black;
+            border-right: 5px solid black;
+
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+
+        div#stats, div#commands {
+            width: 50%;
+            margin: 0;
+            box-sizing: border-box;
+            border-top: none;
+            font-weight: bold;
+            color: cyan;
+            background-color: #303030;
+        }
+        ul {
+            margin: 0;
+            padding: 0;
+        }
+        li {
+            list-style: none;
+            margin-bottom: 2px;
+        }
+        #commands h3 {
+            margin-top: 1.5em;
+            margin-bottom: .5em;
+            padding-bottom: 0;
+        }
+        #state {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            font-size: 1.5rem;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: opacity 0.3s ease;
+        }
+        #stats li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #stats .label {
+            min-width: 70px;
+        }
+
+        #stats .value {
+            text-align: right;
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
 </head>
 <body>
 <div id="tamagotchi">
-    <h1 id="name"></h1>
-    <p id="age"></p>
-    <p id="energy"></p>
-    <p id="happy"></p>
-    <p id="hunger"></p>
-    <p id="clean"></p>
-    <p id="state"></p>
+    <canvas id="tamagotchiCanvas" width="160" height="160"></canvas>
+    <div id="state"></div>
 </div>
-<canvas id="tamagotchiCanvas" width="160" height="160"></canvas>
-<p>Commands</p>
-<ul>
-    <li>!feed</li>
-    <li>!sleep</li>
-    <li>!clean</li>
-    <li>!play</li>
-</ul>
+<div id="bottom-container">
+    <div id="stats">
+        <h1 id="name"></h1>
+        <ul>
+            <li><span class="label">Happy:</span><span id="happy" class="value"></span></li>
+            <li><span class="label">Energy:</span><span id="energy" class="value"></span></li>
+            <li><span class="label">Hunger:</span><span id="hunger" class="value"></span></li>
+            <li><span class="label">Clean:</span><span id="clean" class="value"></span></li>
+        </ul>
+    </div>
+    <div id="commands">
+        <h3>Commands</h3>
+        <ul>
+            <li>!feed</li>
+            <li>!sleep</li>
+            <li>!clean</li>
+            <li>!play</li>
+            <li>!new (name)</li>
+        </ul>
+    </div>
+</div>
+
+
 <script>
     const mametchi_adult = [
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -111,7 +217,24 @@
     const getEmojis = (value, emoji) => {
         const count = Math.round(value / 25);
         return emoji.repeat(count);
-    }
+    };
+
+    const showStatus = (status) => {
+        switch(status.toLowerCase()){
+            case "sleep":
+                return "😴";
+            case "idle":
+                return "🙂";
+            case "eating":
+                return "🍴";
+            case "grooming":
+                return "🪥";
+            case "playing":
+                return "🦦";
+            default:
+                return "";
+        }
+    };
 
   eventSource.onmessage = (event) => {
       let name = document.getElementById("name");
@@ -129,15 +252,15 @@
             happy.innerText =
             energy.innerText =
             hunger.innerText =
-            clean.innerText =
-            state.innerText = "";
+            clean.innerText = "";
+            // state.innerText = "";
       } else {
-          age.innerText = `Age: ${tamagotchi.age}`;
-          happy.innerText = `Happy: ${getEmojis(tamagotchi.health.Healthy[0].happy, "😃")}`;
-          energy.innerText = `Energy: ${getEmojis(tamagotchi.health.Healthy[0].energy, "⚡")}`;
-          hunger.innerText = `Hunger: ${getEmojis(tamagotchi.health.Healthy[0].hunger, "🍖")}`;
-          clean.innerText = `Clean: ${getEmojis(tamagotchi.health.Healthy[0].clean, "🧼")}`;
-          state.innerText = `State: ${tamagotchi.health.Healthy[1]}`;
+          // age.innerText = `Age: ${tamagotchi.age}`;
+          happy.innerText = `${getEmojis(tamagotchi.health.Healthy[0].happy, "😃")}`;
+          energy.innerText = `${getEmojis(tamagotchi.health.Healthy[0].energy, "⚡")}`;
+          hunger.innerText = `${getEmojis(tamagotchi.health.Healthy[0].hunger, "🍖")}`;
+          clean.innerText = `${getEmojis(tamagotchi.health.Healthy[0].clean, "🧼")}`;
+          state.innerText = `${showStatus(tamagotchi.health.Healthy[1])}`;
       }
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);

@@ -5,7 +5,6 @@ use dotenv::dotenv;
 use std::sync::{Arc, Mutex};
 
 mod commands;
-mod frontend;
 mod parser;
 mod tamagotchi;
 mod webserver;
@@ -48,7 +47,6 @@ async fn read_commands_from_chat() {
                     tmi::Message::Privmsg(msg) => {
                         if let Some(command) = get_command(&mut msg.text()) {
                             println!("{:?}", command);
-                            // send to the game
                             _ = http_client
                                 .post(&action_url)
                                 .json(&ActionRequest::from(command))
