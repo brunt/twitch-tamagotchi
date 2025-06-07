@@ -86,10 +86,9 @@ async fn sse_handler(
     State(state): State<AppState>,
 ) -> Sse<impl tokio_stream::Stream<Item = Result<Event, Infallible>>> {
     let interval = tokio::time::interval(Duration::from_secs(2));
-    let tamagotchi = state.tamagotchi.clone();
 
     let stream = IntervalStream::new(interval).then(move |_| {
-        let tamagotchi = tamagotchi.clone();
+        let tamagotchi = state.tamagotchi.clone();
         async move {
             if let Ok(tamagotchi) = tamagotchi.lock() {
                 if let Ok(state_json) = serde_json::to_string(&*tamagotchi) {
