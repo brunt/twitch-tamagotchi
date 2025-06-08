@@ -69,8 +69,7 @@ impl Tamagotchi {
     pub fn feed(&mut self) {
         if let Health::Healthy(ref mut needs, ref mut state) = self.health {
             if state == &ActiveState::Idle {
-                needs.hunger = 100;
-                needs.happy = ((needs.happy as f32 * 0.25) as i32).max(100);
+                needs.hunger = (needs.hunger + 50).max(100);
                 *state = ActiveState::Eating;
             }
         }
@@ -78,17 +77,14 @@ impl Tamagotchi {
 
     pub fn clean(&mut self) {
         if let Health::Healthy(ref mut needs, ref mut state) = self.health {
-            needs.clean = 100;
-            needs.energy = ((needs.energy as f32 * 0.25) as i32).max(100);
-            needs.happy = ((needs.happy as f32 * 0.25) as i32).max(100);
-
+            needs.clean = (needs.clean + 50).max(100);
             *state = ActiveState::Grooming;
         }
     }
 
     pub fn play(&mut self) {
         if let Health::Healthy(ref mut needs, ref mut state) = self.health {
-            needs.happy = (needs.happy + (0.25 * self.age as f32) as i32).max(100);
+            needs.happy = (needs.happy + 50).max(100);
             needs.energy = (needs.energy - (0.25 * self.age as f32) as i32).max(100);
             *state = ActiveState::Playing;
         }
@@ -97,7 +93,6 @@ impl Tamagotchi {
     pub fn sleep(&mut self) {
         if let Health::Healthy(ref mut needs, ref mut state) = self.health {
             needs.energy = (needs.energy + 25).min(100);
-            needs.hunger = (needs.hunger - (0.25 * self.age as f32) as i32).max(0);
             *state = ActiveState::Sleeping;
         }
     }
