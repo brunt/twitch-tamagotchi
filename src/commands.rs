@@ -8,6 +8,7 @@ pub enum PetCommand {
     Play,
     Sleep,
     Clean,
+    Kill,
     New(String),
 }
 
@@ -18,6 +19,7 @@ impl Display for PetCommand {
             PetCommand::Play => write!(f, "Pet"),
             PetCommand::Sleep => write!(f, "Sleep"),
             PetCommand::Clean => write!(f, "Clean"),
+            PetCommand::Kill => write!(f, "Kill"),
             PetCommand::New(..) => write!(f, "New"),
         }
     }

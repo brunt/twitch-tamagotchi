@@ -12,6 +12,7 @@ pub fn get_command(input: &mut &str) -> Option<PetCommand> {
             Caseless("play").value(PetCommand::Play),
             Caseless("sleep").value(PetCommand::Sleep),
             Caseless("clean").value(PetCommand::Clean),
+            Caseless("kill").value(PetCommand::Kill),
             preceded(
                 "new",
                 preceded(

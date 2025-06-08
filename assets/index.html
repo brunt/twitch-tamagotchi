@@ -215,14 +215,14 @@
   let eventSource = new EventSource('sse');
 
     const getEmojis = (value, emoji) => {
-        const count = Math.round(value / 25);
+        const count = Math.floor(Math.round(value / 25));
         return emoji.repeat(count);
     };
 
     const showStatus = (status) => {
         switch(status.toLowerCase()){
             case "sleep":
-                return "😴";
+                return "💤";
             case "idle":
                 return "🙂";
             case "eating":
