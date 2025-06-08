@@ -8,7 +8,7 @@
             line-height: 1;
         }
         div#tamagotchi {
-            position: relative; /* Add this */
+            position: relative;
             background-image: url("p1-background.png");
             background-repeat: no-repeat;
             border: 5px solid black;
@@ -24,14 +24,18 @@
             box-sizing: border-box;
         }
         div#stats {
-            padding-left: 1em;
+            width: 55%;
+            padding-left: 0.5em;
             border-bottom-right-radius: 0;
             border-right: none;
+            font-size: 1.15em;
         }
         div#commands {
+            width: 45%;
             border-bottom-left-radius: 0;
             border-left: none;
-            padding-left: 1em;
+            font-size: 1.175em;
+            padding-left: .75em;
         }
         div#bottom-container {
             display: flex;
@@ -39,7 +43,7 @@
             align-items: stretch;
             width: 345px;
             margin: 0 auto;
-            gap: 0; /* or small gap if you want spacing */
+            gap: 0;
             box-sizing: border-box;
             border-bottom: 5px solid black;
             border-left: 5px solid black;
@@ -50,7 +54,6 @@
         }
 
         div#stats, div#commands {
-            width: 50%;
             margin: 0;
             box-sizing: border-box;
             border-top: none;
@@ -67,7 +70,7 @@
             margin-bottom: 2px;
         }
         #commands h3 {
-            margin-top: 1.5em;
+            margin-top: 0.5em;
             margin-bottom: .5em;
             padding-bottom: 0;
         }
@@ -76,7 +79,7 @@
             bottom: 8px;
             left: 8px;
             font-size: 1.5rem;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: black;
             padding: 4px 8px;
             border-radius: 6px;
             transition: opacity 0.3s ease;
@@ -86,7 +89,9 @@
             justify-content: space-between;
             align-items: center;
         }
-
+        #stats h1 {
+            margin: 0.25em 0 0.5em 0;
+        }
         #stats .label {
             min-width: 70px;
         }
@@ -118,16 +123,14 @@
     <div id="commands">
         <h3>Commands</h3>
         <ul>
+            <li>!new (name)</li>
             <li>!play</li>
             <li>!sleep</li>
             <li>!feed</li>
             <li>!clean</li>
-            <li>!new (name)</li>
         </ul>
     </div>
 </div>
-
-
 <script>
     const mametchi_adult = [
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -172,15 +175,15 @@
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0],
-        [0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0],
-        [0,0,0,1,0,0,1,0,0,1,0,0,1,0,0,0],
-        [0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0],
-        [0,0,0,1,0,0,0,1,1,0,0,0,1,0,0,0],
-        [0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0],
-        [0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0],
-        [0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0],
-        [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0],
+        [0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0],
+        [0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0],
+        [0,0,1,0,0,1,0,0,1,0,0,1,0,0,0,0],
+        [0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0],
+        [0,0,1,0,0,0,1,1,0,0,0,1,0,0,0,0],
+        [0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0],
+        [0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0],
+        [0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0],
+        [0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
@@ -210,21 +213,26 @@
     const pixelSize = 10;
 
     ctx.fillStyle = 'black';
-
     let invert = false;
-  let eventSource = new EventSource('sse');
+    let eventSource = new EventSource('sse');
 
     const getEmojis = (value, emoji) => {
-        const count = Math.floor(Math.round(value / 25));
+        const count = Math.ceil(Math.round(value / 25));
         return emoji.repeat(count);
     };
 
-    const showStatus = (status) => {
+    const showStatus = (status, happy) => {
         switch(status.toLowerCase()){
             case "sleep":
                 return "💤";
             case "idle":
-                return "🙂";
+                if(happy > 75) {
+                    return "🙂";
+                } else if(happy < 25) {
+                    return "☹️";
+                } else {
+                    return "😐";
+                }
             case "eating":
                 return "🍴";
             case "grooming":
@@ -236,9 +244,8 @@
         }
     };
 
-  eventSource.onmessage = (event) => {
+    eventSource.onmessage = (event) => {
       let name = document.getElementById("name");
-      let age = document.getElementById("age");
       let energy = document.getElementById("energy");
       let happy = document.getElementById("happy");
       let hunger = document.getElementById("hunger");
@@ -254,11 +261,11 @@
             clean.innerText =
             state.innerText = "🪦";
       } else {
-          happy.innerText = `${getEmojis(tamagotchi.health.Healthy[0].happy, "😃")}`;
+          happy.innerText = `${getEmojis(tamagotchi.health.Healthy[0].happy, "❤️")}`;
           energy.innerText = `${getEmojis(tamagotchi.health.Healthy[0].energy, "⚡")}`;
           hunger.innerText = `${getEmojis(tamagotchi.health.Healthy[0].hunger, "🍖")}`;
           clean.innerText = `${getEmojis(tamagotchi.health.Healthy[0].clean, "🧼")}`;
-          state.innerText = `${showStatus(tamagotchi.health.Healthy[1])}`;
+          state.innerText = `${showStatus(tamagotchi.health.Healthy[1], tamagotchi.health.Healthy[0].happy)}`;
 
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           let anim, anim_inverted;

@@ -1,4 +1,3 @@
-use std::cmp::PartialEq;
 use crate::commands::PetCommand;
 use crate::tamagotchi::{Health, Tamagotchi};
 use axum::extract::State;
@@ -64,19 +63,19 @@ async fn action(State(state): State<AppState>, Json(req): Json<ActionRequest>) -
         match req.action {
             PetCommand::Feed => {
                 tamagotchi.feed();
-            },
+            }
             PetCommand::Clean => {
                 tamagotchi.clean();
-            },
+            }
             PetCommand::Play => {
                 tamagotchi.play();
-            },
+            }
             PetCommand::Sleep => {
                 tamagotchi.sleep();
-            },
+            }
             PetCommand::Kill => {
                 tamagotchi.kill();
-            },
+            }
             PetCommand::New(name) => {
                 if matches!(tamagotchi.health, Health::Dead) {
                     *tamagotchi = Tamagotchi::new(name);
