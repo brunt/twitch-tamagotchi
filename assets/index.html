@@ -118,10 +118,10 @@
     <div id="commands">
         <h3>Commands</h3>
         <ul>
-            <li>!feed</li>
-            <li>!sleep</li>
-            <li>!clean</li>
             <li>!play</li>
+            <li>!sleep</li>
+            <li>!feed</li>
+            <li>!clean</li>
             <li>!new (name)</li>
         </ul>
     </div>
@@ -248,14 +248,12 @@
       name.innerText = tamagotchi.name;
 
       if(tamagotchi.health === "Dead") {
-            age.innerText =
             happy.innerText =
             energy.innerText =
             hunger.innerText =
             clean.innerText =
             state.innerText = "🪦";
       } else {
-          // age.innerText = `Age: ${tamagotchi.age}`;
           happy.innerText = `${getEmojis(tamagotchi.health.Healthy[0].happy, "😃")}`;
           energy.innerText = `${getEmojis(tamagotchi.health.Healthy[0].energy, "⚡")}`;
           hunger.innerText = `${getEmojis(tamagotchi.health.Healthy[0].hunger, "🍖")}`;
