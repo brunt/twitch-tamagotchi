@@ -1,3 +1,5 @@
+use crate::commands::PetCommand;
+use circular_buffer::CircularBuffer;
 use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
 use serde::{Deserialize, Serialize};
@@ -43,6 +45,10 @@ pub struct Tamagotchi {
     pub health: Health,
     pub age: i32,
     #[serde(skip)]
+    command_queue: CircularBuffer<20, PetCommand>,
+    #[serde(skip)]
+    action_timer: u8,
+    #[serde(skip)]
     rng: SmallRng,
 }
 
@@ -62,53 +68,53 @@ impl Tamagotchi {
             name,
             health: Health::Healthy(Needs::default(), ActiveState::Idle),
             age: 0,
+            command_queue: CircularBuffer::new(),
+            action_timer: 0,
             rng: SmallRng::from_os_rng(),
         }
+    }
+
+    pub fn is_idle(&self) -> bool {
+        matches!(self.health, Health::Healthy(_, ActiveState::Idle))
     }
 
     pub fn kill(&mut self) {
         self.health = Health::Dead;
     }
 
-    pub fn feed(&mut self) {
+    pub fn tick(&mut self) {
         if let Health::Healthy(ref mut needs, ref mut state) = self.health {
-            if state == &ActiveState::Idle {
-                needs.hunger = (needs.hunger + 50).min(100);
-                *state = ActiveState::Eating;
+            if self.action_timer > 0 {
+                self.action_timer -= 1;
+                if self.action_timer == 0 && *state != ActiveState::Sleeping {
+                    *state = ActiveState::Idle;
+                }
             }
-        }
-    }
-
-    pub fn clean(&mut self) {
-        if let Health::Healthy(ref mut needs, ref mut state) = self.health {
-            if state == &ActiveState::Idle {
-                needs.clean = (needs.clean + 50).min(100);
-                *state = ActiveState::Grooming;
+            if let Some(cmd) = self.command_queue.pop_front() {
+                match cmd {
+                    PetCommand::Feed => {
+                        needs.hunger = (needs.hunger + 50).min(100);
+                        *state = ActiveState::Eating;
+                        self.action_timer = 1;
+                    }
+                    PetCommand::Sleep => {
+                        needs.energy = (needs.energy + 25).min(100);
+                        *state = ActiveState::Sleeping;
+                        self.action_timer = 2;
+                    }
+                    PetCommand::Clean => {
+                        needs.clean = (needs.clean + 50).min(100);
+                        *state = ActiveState::Grooming;
+                        self.action_timer = 1;
+                    }
+                    PetCommand::Play => {
+                        needs.happy = (needs.happy + 50).min(100);
+                        *state = ActiveState::Playing;
+                        self.action_timer = 1;
+                    }
+                    _ => unreachable!(),
+                }
             }
-        }
-    }
-
-    pub fn play(&mut self) {
-        if let Health::Healthy(ref mut needs, ref mut state) = self.health {
-            if state == &ActiveState::Idle {
-                needs.happy = (needs.happy + 50).min(100);
-                needs.energy = (needs.energy - 20).min(100);
-                *state = ActiveState::Playing;
-            }
-        }
-    }
-
-    pub fn sleep(&mut self) {
-        if let Health::Healthy(ref mut needs, ref mut state) = self.health {
-            if state == &ActiveState::Idle {
-                needs.energy = (needs.energy + 25).min(100);
-                *state = ActiveState::Sleeping;
-            }
-        }
-    }
-
-    pub fn do_idle(&mut self) {
-        if let Health::Healthy(ref mut needs, ref mut state) = self.health {
             let age_factor = match self.age {
                 x if x < 50 => 4,
                 x if x < 100 => 3,
@@ -118,7 +124,7 @@ impl Tamagotchi {
             if needs.energy == 0 || (state == &ActiveState::Sleeping && needs.energy < 100) {
                 *state = ActiveState::Sleeping;
                 needs.energy = (needs.energy + 25).min(100);
-            } else {
+            } else if self.action_timer == 0 {
                 *state = ActiveState::Idle;
                 needs.energy = (needs.energy - self.rng.random_range(1..3)).max(0);
             };
@@ -131,5 +137,9 @@ impl Tamagotchi {
                 self.health = Health::Dead;
             }
         }
+    }
+
+    pub fn add_command(&mut self, command: PetCommand) {
+        self.command_queue.push_back(command);
     }
 }

@@ -3,6 +3,7 @@ use crate::tamagotchi::Tamagotchi;
 use crate::webserver::{ActionRequest, start_web_server};
 use dotenv::dotenv;
 use std::sync::{Arc, Mutex};
+use tokio::sync::Notify;
 
 mod commands;
 mod parser;
@@ -13,9 +14,14 @@ mod webserver;
 async fn main() -> anyhow::Result<()> {
     dotenv().ok();
     let tamagotchi = Arc::new(Mutex::new(Tamagotchi::new("Bernard".to_string())));
+    let notify = Arc::new(Notify::new());
+
     _ = tokio::spawn(read_commands_from_chat());
-    _ = tokio::spawn(start_web_server(Arc::clone(&tamagotchi)));
-    start_game_loop(Arc::clone(&tamagotchi)).await?;
+    _ = tokio::spawn(start_web_server(
+        Arc::clone(&tamagotchi),
+        Arc::clone(&notify),
+    ));
+    start_game_loop(Arc::clone(&tamagotchi), Arc::clone(&notify)).await?;
     Ok(())
 }
 
@@ -67,11 +73,17 @@ async fn read_commands_from_chat() {
     }
 }
 
-async fn start_game_loop(tamagotchi: Arc<Mutex<Tamagotchi>>) -> anyhow::Result<()> {
+async fn start_game_loop(
+    tamagotchi: Arc<Mutex<Tamagotchi>>,
+    notify: Arc<Notify>,
+) -> anyhow::Result<()> {
     loop {
-        tokio::time::sleep(std::time::Duration::from_secs(30)).await;
+        tokio::select! {
+            _ = tokio::time::sleep(std::time::Duration::from_secs(30)) => {}
+            _ = notify.notified() => {}
+        }
         if let Ok(mut t) = tamagotchi.lock() {
-            t.do_idle();
+            t.tick();
         }
     }
 }

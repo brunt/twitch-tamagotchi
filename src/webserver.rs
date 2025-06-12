@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 use std::convert::Infallible;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
+use tokio::sync::Notify;
 use tokio_stream::StreamExt as _;
 use tokio_stream::wrappers::IntervalStream;
 use tower_http::cors::{Any, CorsLayer};
@@ -18,11 +19,12 @@ use tower_http::services::ServeDir;
 #[derive(Clone)]
 pub struct AppState {
     pub tamagotchi: Arc<Mutex<Tamagotchi>>,
+    pub notify: Arc<Notify>,
 }
 
 impl AppState {
-    pub fn new(tamagotchi: Arc<Mutex<Tamagotchi>>) -> AppState {
-        Self { tamagotchi }
+    pub fn new(tamagotchi: Arc<Mutex<Tamagotchi>>, notify: Arc<Notify>) -> AppState {
+        Self { tamagotchi, notify }
     }
 }
 
@@ -37,9 +39,12 @@ impl From<PetCommand> for ActionRequest {
     }
 }
 
-pub async fn start_web_server(tamagotchi: Arc<Mutex<Tamagotchi>>) -> anyhow::Result<()> {
+pub async fn start_web_server(
+    tamagotchi: Arc<Mutex<Tamagotchi>>,
+    notify: Arc<Notify>,
+) -> anyhow::Result<()> {
     let default_port = std::env::var("PORT")?;
-    let state = AppState::new(tamagotchi);
+    let state = AppState::new(tamagotchi, notify);
 
     let app = Router::new()
         .route("/action", post(action))
@@ -61,24 +66,18 @@ pub async fn start_web_server(tamagotchi: Arc<Mutex<Tamagotchi>>) -> anyhow::Res
 async fn action(State(state): State<AppState>, Json(req): Json<ActionRequest>) -> Response {
     if let Ok(mut tamagotchi) = state.tamagotchi.lock() {
         match req.action {
-            PetCommand::Feed => {
-                tamagotchi.feed();
-            }
-            PetCommand::Clean => {
-                tamagotchi.clean();
-            }
-            PetCommand::Play => {
-                tamagotchi.play();
-            }
-            PetCommand::Sleep => {
-                tamagotchi.sleep();
-            }
             PetCommand::Kill => {
                 tamagotchi.kill();
             }
             PetCommand::New(name) => {
                 if matches!(tamagotchi.health, Health::Dead) {
                     *tamagotchi = Tamagotchi::new(name);
+                }
+            }
+            command => {
+                tamagotchi.add_command(command);
+                if tamagotchi.is_idle() {
+                    state.notify.notify_one();
                 }
             }
         }
