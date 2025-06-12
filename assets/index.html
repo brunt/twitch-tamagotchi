@@ -223,16 +223,8 @@
 
     const showStatus = (status, happy) => {
         switch(status.toLowerCase()){
-            case "sleep":
+            case "sleeping":
                 return "💤";
-            case "idle":
-                if(happy > 75) {
-                    return "🙂";
-                } else if(happy < 25) {
-                    return "☹️";
-                } else {
-                    return "😐";
-                }
             case "eating":
                 return "🍴";
             case "grooming":
@@ -240,7 +232,13 @@
             case "playing":
                 return "🦦";
             default:
-                return "";
+                if(happy > 50) {
+                    return "🙂";
+                } else if(happy < 25) {
+                    return "☹️";
+                } else {
+                    return "😐";
+                }
         }
     };
 
