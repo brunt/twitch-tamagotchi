@@ -8,4 +8,11 @@ Implementation of a [Tamagotchi](https://en.wikipedia.org/wiki/Tamagotchi) that 
 
 ![Image](/media/tamagotchi.png)
 
+## How to Use
+* compile the code by installing [rust](https://www.rust-lang.org/) and running `cargo build --release`
+* Configure `.env` file with desired channel name and port for webserver
+* Run the compiled binary either locally or on a different pc if you like
+* In OBS or other streaming software, create a browser source pointing to the ip address of the computer where `twitch-tamagotchi` is running, and the port specified in the `.env` file
+* Type commands in the specified twitch channel's chat and watch the tamagotchi react to commands
+
 _Note: Fonts may need to be installed for emoji support, I had to run `sudo apt install fonts-noto-color-emoji` on my raspberry pi for some emojis to show._

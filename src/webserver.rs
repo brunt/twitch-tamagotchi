@@ -1,11 +1,12 @@
 use crate::commands::PetCommand;
 use crate::tamagotchi::{Health, Tamagotchi};
 use axum::extract::State;
-use axum::http::{Method, StatusCode};
+use axum::http::{Method, StatusCode, Uri, header};
 use axum::response::sse::Event;
-use axum::response::{IntoResponse, Response, Sse};
+use axum::response::{Html, IntoResponse, Response, Sse};
 use axum::routing::{get, post};
 use axum::{Json, Router};
+use rust_embed::RustEmbed;
 use serde::{Deserialize, Serialize};
 use std::convert::Infallible;
 use std::sync::{Arc, Mutex};
@@ -14,7 +15,12 @@ use tokio::sync::Notify;
 use tokio_stream::StreamExt as _;
 use tokio_stream::wrappers::IntervalStream;
 use tower_http::cors::{Any, CorsLayer};
-use tower_http::services::ServeDir;
+
+#[derive(RustEmbed)]
+#[folder = "assets/"]
+struct Assets;
+
+static INDEX_HTML: &str = "index.html";
 
 #[derive(Clone)]
 pub struct AppState {
@@ -54,7 +60,7 @@ pub async fn start_web_server(
                 .allow_origin(Any)
                 .allow_methods([Method::GET, Method::POST]),
         )
-        .fallback_service(ServeDir::new("assets"))
+        .fallback(static_handler)
         .with_state(state);
 
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{default_port}")).await?;
@@ -104,4 +110,38 @@ async fn sse_handler(
     });
 
     Sse::new(stream).keep_alive(axum::response::sse::KeepAlive::new())
+}
+
+async fn static_handler(uri: Uri) -> impl IntoResponse {
+    let path = uri.path().trim_start_matches('/');
+
+    if path.is_empty() || path == INDEX_HTML {
+        return index_html().await;
+    }
+
+    match Assets::get(path) {
+        Some(content) => {
+            let mime = mime_guess::from_path(path).first_or_octet_stream();
+
+            ([(header::CONTENT_TYPE, mime.as_ref())], content.data).into_response()
+        }
+        None => {
+            if path.contains('.') {
+                return not_found().await;
+            }
+
+            index_html().await
+        }
+    }
+}
+
+async fn index_html() -> Response {
+    match Assets::get(INDEX_HTML) {
+        Some(content) => Html(content.data).into_response(),
+        None => not_found().await,
+    }
+}
+
+async fn not_found() -> Response {
+    (StatusCode::NOT_FOUND, "404").into_response()
 }
