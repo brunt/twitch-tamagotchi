@@ -26,7 +26,6 @@ async fn main() -> anyhow::Result<()> {
 }
 
 async fn read_commands_from_chat() {
-    dotenv().ok();
     let channel = format!(
         "#{}",
         std::env::var("CHANNEL_NAME").expect("missing CHANNEL_NAME env var")
