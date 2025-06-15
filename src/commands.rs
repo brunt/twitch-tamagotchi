@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 
 // verbs that owner tells pet to do or does to pet
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)] //debug for now
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum PetCommand {
     Feed,
     Play,
