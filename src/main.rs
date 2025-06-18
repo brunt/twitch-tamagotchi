@@ -20,7 +20,7 @@ async fn main() -> anyhow::Result<()> {
     _ = tokio::spawn(read_commands_from_chat(tx));
     _ = tokio::spawn(start_web_server(Arc::clone(&tamagotchi)));
 
-    start_game_loop(Arc::clone(&tamagotchi), rx).await;
+    start_game_loop(tamagotchi, rx).await;
     Ok(())
 }
 
@@ -61,10 +61,7 @@ async fn read_commands_from_chat(tx: mpsc::Sender<PetCommand>) {
     }
 }
 
-async fn start_game_loop(
-    tamagotchi: Arc<Mutex<Tamagotchi>>,
-    mut rx: mpsc::Receiver<PetCommand>,
-) {
+async fn start_game_loop(tamagotchi: Arc<Mutex<Tamagotchi>>, mut rx: mpsc::Receiver<PetCommand>) {
     loop {
         tokio::select! {
             Some(msg) = rx.recv() => {
