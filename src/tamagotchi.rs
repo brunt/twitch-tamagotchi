@@ -74,10 +74,6 @@ impl Tamagotchi {
         }
     }
 
-    pub fn is_idle(&self) -> bool {
-        matches!(self.health, Health::Healthy(_, ActiveState::Idle))
-    }
-
     pub fn kill(&mut self) {
         self.health = Health::Dead;
     }

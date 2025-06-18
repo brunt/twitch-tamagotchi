@@ -9,12 +9,11 @@ axum = "0.8.4"
 dotenv = "0.15.0"
 circular-buffer = "1.1.0"
 rand = "0.9.1"
-reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
 tmi = "0.9.0"
-tokio = { version = "1.44.1", features = ["full"] }
+tokio = { version = "1.45.1", features = ["full"] }
 tokio-stream = "0.1.17"
-tower-http = { version = "0.6.4", features = ["fs", "cors"] }
-winnow = "0.7.10"
+tower-http = { version = "0.6.4", features = ["cors"] }
+winnow = "0.7.11"
 serde = { version = "1.0.219", features = ["derive"] }
 openssl = { version = "0.10", features = ["vendored"] }
 serde_json = "1.0.140"

@@ -1,17 +1,14 @@
-use crate::commands::PetCommand;
-use crate::tamagotchi::{Health, Tamagotchi};
+use crate::tamagotchi::Tamagotchi;
+use axum::Router;
 use axum::extract::State;
 use axum::http::{Method, StatusCode, Uri, header};
 use axum::response::sse::Event;
 use axum::response::{Html, IntoResponse, Response, Sse};
-use axum::routing::{get, post};
-use axum::{Json, Router};
+use axum::routing::get;
 use rust_embed::RustEmbed;
-use serde::{Deserialize, Serialize};
 use std::convert::Infallible;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use tokio::sync::Notify;
 use tokio_stream::StreamExt as _;
 use tokio_stream::wrappers::IntervalStream;
 use tower_http::cors::{Any, CorsLayer};
@@ -25,35 +22,19 @@ static INDEX_HTML: &str = "index.html";
 #[derive(Clone)]
 pub struct AppState {
     pub tamagotchi: Arc<Mutex<Tamagotchi>>,
-    pub notify: Arc<Notify>,
 }
 
 impl AppState {
-    pub fn new(tamagotchi: Arc<Mutex<Tamagotchi>>, notify: Arc<Notify>) -> AppState {
-        Self { tamagotchi, notify }
+    pub fn new(tamagotchi: Arc<Mutex<Tamagotchi>>) -> AppState {
+        Self { tamagotchi }
     }
 }
 
-#[derive(Deserialize, Serialize, Clone)]
-pub struct ActionRequest {
-    pub action: PetCommand,
-}
-
-impl From<PetCommand> for ActionRequest {
-    fn from(cmd: PetCommand) -> Self {
-        Self { action: cmd }
-    }
-}
-
-pub async fn start_web_server(
-    tamagotchi: Arc<Mutex<Tamagotchi>>,
-    notify: Arc<Notify>,
-) -> anyhow::Result<()> {
+pub async fn start_web_server(tamagotchi: Arc<Mutex<Tamagotchi>>) -> anyhow::Result<()> {
     let default_port = std::env::var("PORT")?;
-    let state = AppState::new(tamagotchi, notify);
+    let state = AppState::new(tamagotchi);
 
     let app = Router::new()
-        .route("/action", post(action))
         .route("/sse", get(sse_handler))
         .layer(
             CorsLayer::new()
@@ -69,29 +50,6 @@ pub async fn start_web_server(
     Ok(())
 }
 
-async fn action(State(state): State<AppState>, Json(req): Json<ActionRequest>) -> Response {
-    if let Ok(mut tamagotchi) = state.tamagotchi.lock() {
-        match req.action {
-            PetCommand::Kill => {
-                tamagotchi.kill();
-            }
-            PetCommand::New(name) => {
-                if matches!(tamagotchi.health, Health::Dead) {
-                    *tamagotchi = Tamagotchi::new(name);
-                }
-            }
-            command => {
-                tamagotchi.add_command(command);
-                if tamagotchi.is_idle() {
-                    state.notify.notify_one();
-                }
-            }
-        }
-        StatusCode::OK.into_response()
-    } else {
-        StatusCode::INTERNAL_SERVER_ERROR.into_response()
-    }
-}
 async fn sse_handler(
     State(state): State<AppState>,
 ) -> Sse<impl tokio_stream::Stream<Item = Result<Event, Infallible>>> {
