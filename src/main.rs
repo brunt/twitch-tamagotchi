@@ -44,7 +44,7 @@ async fn read_commands_from_chat(tx: mpsc::Sender<PetCommand>) {
                 match m {
                     tmi::Message::Privmsg(msg) => {
                         if let Some(command) = get_command(&mut msg.text()) {
-                            let _ = tx.send(command).await;
+                            let _ = tx.try_send(command);
                         }
                     }
                     tmi::Message::Reconnect => {
