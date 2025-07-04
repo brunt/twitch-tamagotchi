@@ -3,7 +3,7 @@
   description = "Cross-compiling a Rust + OpenSSL project to aarch64-unknown-linux-gnu";
 
   inputs = {
-    nixpkgs.url = "nixpkgs/nixos-24.11";
+    nixpkgs.url = "nixpkgs/nixos-25.05";
     flake-utils.url = "github:numtide/flake-utils";
     rust-overlay.url = "github:oxalica/rust-overlay";
   };
