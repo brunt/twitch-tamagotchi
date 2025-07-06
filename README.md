@@ -1,3 +1,5 @@
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support%20me-orange?logo=kofi)](https://ko-fi.com/ubruntu65048)
+
 # Twitch Tamagotchi
 
 Implementation of a [Tamagotchi](https://en.wikipedia.org/wiki/Tamagotchi) that interacts via Twitch chat commands
