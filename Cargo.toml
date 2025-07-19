@@ -15,7 +15,9 @@ tokio-stream = "0.1.17"
 tower-http = { version = "0.6.4", features = ["cors"] }
 winnow = "0.7.11"
 serde = { version = "1.0.219", features = ["derive"] }
-openssl = { version = "0.10", features = ["vendored"] }
 serde_json = "1.0.140"
 rust-embed = "8.7.2"
 mime_guess = "2.0.5"
+
+[target.'cfg(linux)'.dependencies]
+openssl = { version = "0.10", features = ["vendored"] }
